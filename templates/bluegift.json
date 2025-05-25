@@ -1,7 +1,7 @@
 {
   "width": 1200,
   "height": 630,
-  "background": "templates/bluegift.png",
+  "background": "bluegift.png",
   "titleColor": "#ffffff",
   "titleX": 60,
   "titleY": 120,
