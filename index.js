@@ -6,10 +6,15 @@ const gm = require('gm').subClass({ imageMagick: true });
 const multer = require('multer');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(bodyParser.json());
+
+// Serve static files from /public
 app.use(express.static('public'));
 
-const PORT = process.env.PORT || 3000;
+// ✅ Serve template images from /templates
+app.use('/templates', express.static(path.join(__dirname, 'public/templates')));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -21,12 +26,14 @@ app.get('/templates', (req, res) => {
   const templateDir = path.join(__dirname, 'templates');
   fs.readdir(templateDir, (err, files) => {
     if (err) return res.status(500).json({ error: 'Template directory not found' });
-    const templates = files.filter(file => file.endsWith('.json')).map(file => path.basename(file, '.json'));
+    const templates = files
+      .filter(file => file.endsWith('.json'))
+      .map(file => path.basename(file, '.json'));
     res.json({ templates });
   });
 });
 
-// Simple image generation (test endpoint)
+// Simple image generation
 app.post('/generate', (req, res) => {
   const { title, subtitle } = req.body;
 
@@ -46,7 +53,7 @@ app.post('/generate', (req, res) => {
     });
 });
 
-// Generate blog overlay image using a template
+// Generate image using a blog overlay template
 app.post('/generate-overlay', (req, res) => {
   const { title, excerpt, category, author, date, template = 'default' } = req.body;
   const templatePath = path.join(__dirname, 'templates', `${template}.json`);

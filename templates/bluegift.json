@@ -1,0 +1,21 @@
+{
+  "backgroundImage": "bluegift.png",
+  "title": {
+    "x": 100,
+    "y": 150,
+    "fontSize": 60,
+    "color": "#000000"
+  },
+  "subtitle": {
+    "x": 100,
+    "y": 230,
+    "fontSize": 40,
+    "color": "#333333"
+  },
+  "author": {
+    "x": 100,
+    "y": 310,
+    "fontSize": 30,
+    "color": "#666666"
+  }
+}
