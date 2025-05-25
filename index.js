@@ -65,7 +65,14 @@ app.post('/generate-overlay', (req, res) => {
 
   const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
 
-  const image = gm(templateData.width, templateData.height, templateData.background)
+  let image;
+  if (templateData.background.endsWith('.png') || templateData.background.endsWith('.jpg')) {
+    image = gm(path.join(__dirname, templateData.background));
+  } else {
+    image = gm(templateData.width, templateData.height, templateData.background);
+  }
+
+  image
     .font(fontPath, 48)
     .fill(templateData.titleColor)
     .drawText(templateData.titleX, templateData.titleY, title || '')
