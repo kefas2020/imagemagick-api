@@ -1,0 +1,15 @@
+{
+  "name": "default",
+  "width": 1200,
+  "height": 630,
+  "background": "#ffffff",
+  "titleColor": "#111111",
+  "titleX": 50,
+  "titleY": 150,
+  "excerptColor": "#333333",
+  "excerptX": 50,
+  "excerptY": 250,
+  "metaColor": "#555555",
+  "metaX": 50,
+  "metaY": 350
+}

@@ -1,18 +1,43 @@
 const express = require('express');
-const gm = require('gm').subClass({ imageMagick: true });
+const fs = require('fs');
+const path = require('path');
 const bodyParser = require('body-parser');
+const gm = require('gm').subClass({ imageMagick: true });
+const multer = require('multer');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
+const PORT = process.env.PORT || 3000;
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', message: 'ImageMagick API is live' });
+});
+
+// List templates
+app.get('/templates', (req, res) => {
+  const templateDir = path.join(__dirname, 'templates');
+  fs.readdir(templateDir, (err, files) => {
+    if (err) return res.status(500).json({ error: 'Template directory not found' });
+    const templates = files.filter(file => file.endsWith('.json')).map(file => path.basename(file, '.json'));
+    res.json({ templates });
+  });
+});
+
+// Simple image generation (test endpoint)
 app.post('/generate', (req, res) => {
   const { title, subtitle } = req.body;
 
+  const fontBold = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
+  const fontRegular = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
+
   gm(1200, 630, '#ffffff')
+    .font(fontBold, 60)
     .fill('#333')
-    .fontSize(60)
     .drawText(50, 150, title || 'Untitled')
-    .fontSize(30)
+    .font(fontRegular, 30)
     .drawText(50, 250, subtitle || '')
     .toBuffer('PNG', (err, buffer) => {
       if (err) return res.status(500).send(err.message);
@@ -21,5 +46,37 @@ app.post('/generate', (req, res) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Overlay service running on port ${PORT}`));
+// Generate blog overlay image using a template
+app.post('/generate-overlay', (req, res) => {
+  const { title, excerpt, category, author, date, template = 'default' } = req.body;
+  const templatePath = path.join(__dirname, 'templates', `${template}.json`);
+  const fontPath = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
+
+  if (!fs.existsSync(templatePath)) {
+    return res.status(404).json({ error: 'Template not found' });
+  }
+
+  const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+
+  const image = gm(templateData.width, templateData.height, templateData.background)
+    .font(fontPath, 48)
+    .fill(templateData.titleColor)
+    .drawText(templateData.titleX, templateData.titleY, title || '')
+    .font(fontPath, 28)
+    .fill(templateData.excerptColor)
+    .drawText(templateData.excerptX, templateData.excerptY, excerpt || '')
+    .font(fontPath, 22)
+    .fill(templateData.metaColor)
+    .drawText(templateData.metaX, templateData.metaY, `${author || ''} | ${category || ''} | ${date || ''}`);
+
+  image.toBuffer('PNG', (err, buffer) => {
+    if (err) return res.status(500).send(err.message);
+    res.set('Content-Type', 'image/png');
+    res.send(buffer);
+  });
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`ImageMagick API running on port ${PORT}`);
+});
