@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 // Serve static files from /public
 app.use(express.static('public'));
 
-// ✅ Serve template images from /templates
+// ✅ Serve template images from /public/templates via /templates
 app.use('/templates', express.static(path.join(__dirname, 'public/templates')));
 
 // Health check
@@ -33,7 +33,7 @@ app.get('/templates', (req, res) => {
   });
 });
 
-// Simple image generation
+// Simple test image generation
 app.post('/generate', (req, res) => {
   const { title, subtitle } = req.body;
 
@@ -66,9 +66,17 @@ app.post('/generate-overlay', (req, res) => {
   const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
 
   let image;
-  if (templateData.background.endsWith('.png') || templateData.background.endsWith('.jpg')) {
-    image = gm(path.join(__dirname, templateData.background));
+
+  // ✅ Handle background as either a color or an image file
+  if (
+    templateData.background.endsWith('.png') ||
+    templateData.background.endsWith('.jpg') ||
+    templateData.background.endsWith('.jpeg')
+  ) {
+    // Use the image file from public/templates
+    image = gm(path.join(__dirname, 'public', templateData.background));
   } else {
+    // Use background as solid color
     image = gm(templateData.width, templateData.height, templateData.background);
   }
 
@@ -81,7 +89,11 @@ app.post('/generate-overlay', (req, res) => {
     .drawText(templateData.excerptX, templateData.excerptY, excerpt || '')
     .font(fontPath, 22)
     .fill(templateData.metaColor)
-    .drawText(templateData.metaX, templateData.metaY, `${author || ''} | ${category || ''} | ${date || ''}`);
+    .drawText(
+      templateData.metaX,
+      templateData.metaY,
+      `${author || ''} | ${category || ''} | ${date || ''}`
+    );
 
   image.toBuffer('PNG', (err, buffer) => {
     if (err) return res.status(500).send(err.message);
