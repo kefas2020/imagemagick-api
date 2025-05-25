@@ -1,14 +1,14 @@
 {
   "width": 1200,
   "height": 630,
-  "background": "public/templates/bluegift.png",
+  "background": "templates/bluegift.png",
   "titleColor": "#ffffff",
-  "excerptColor": "#dddddd",
-  "metaColor": "#cccccc",
   "titleX": 60,
-  "titleY": 150,
+  "titleY": 120,
+  "excerptColor": "#ffffff",
   "excerptX": 60,
-  "excerptY": 250,
+  "excerptY": 200,
+  "metaColor": "#cccccc",
   "metaX": 60,
-  "metaY": 350
+  "metaY": 280
 }
